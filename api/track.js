@@ -1,5 +1,6 @@
 // Vercel Serverless Function for tracking
-import { kv } from '@vercel/kv';
+// Simple in-memory storage for demo purposes
+let sessions = [];
 
 // Get client IP
 const getClientIP = (req) => {
@@ -21,8 +22,8 @@ export default async function handler(req, res) {
   const { action } = req.query;
 
   try {
-    // Get existing sessions or initialize
-    let sessions = await kv.get('pookie_sessions') || [];
+    // For demo purposes, we'll use in-memory storage
+    // In production, you'd want to use a real database
 
     switch (action) {
       case 'start': {
@@ -48,7 +49,6 @@ export default async function handler(req, res) {
         };
         
         sessions.push(session);
-        await kv.set('pookie_sessions', sessions);
         
         return res.status(200).json({ success: true, sessionId: session.id });
       }
@@ -68,7 +68,6 @@ export default async function handler(req, res) {
             });
           }
           session.lastActivity = new Date().toISOString();
-          await kv.set('pookie_sessions', sessions);
         }
         
         return res.status(200).json({ success: true });
@@ -87,7 +86,6 @@ export default async function handler(req, res) {
             playedAt: new Date().toISOString()
           });
           session.lastActivity = new Date().toISOString();
-          await kv.set('pookie_sessions', sessions);
         }
         
         return res.status(200).json({ success: true });
@@ -106,7 +104,6 @@ export default async function handler(req, res) {
           };
           session.completed = true;
           session.lastActivity = new Date().toISOString();
-          await kv.set('pookie_sessions', sessions);
         }
         
         return res.status(200).json({ success: true });
@@ -141,7 +138,7 @@ export default async function handler(req, res) {
       case 'clear': {
         if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
         
-        await kv.set('pookie_sessions', []);
+        sessions = [];
         return res.status(200).json({ success: true, message: 'All data cleared' });
       }
 
