@@ -44,46 +44,50 @@ const slides = [
   {
     id: 'hero',
     title: 'For My Pookie',
-    subtitle: 'A message written with love, meant only for you',
-    cta: 'Open My Heart',
+    subtitle: 'Every word written with tears of regret and a heart that still beats for you',
+    cta: 'Enter My Heart',
   },
   {
     id: 'apology',
-    title: "I'm Truly Sorry",
-    subtitle: 'These words come from the deepest part of my heart',
-    message: 'I know I hurt you, and nothing I say can undo that pain. But I want you to know that every moment since has been filled with regret. You deserve so much better, and I promise to be that person.',
+    title: 'My Heart Weeps For You',
+    subtitle: 'These words come from the deepest, most broken part of my soul',
+    message: 'I know I shattered your trust and broke the beautiful thing we had. Every night I lie awake replaying my mistakes, every morning I wake up hoping this was all just a terrible dream. You are the light of my life, and without you, everything is darkness. I would give anything to turn back time and hold you the way you deserve to be held.',
   },
   {
     id: 'memories',
-    title: 'Our Beautiful Moments',
-    subtitle: 'The memories I hold closest to my heart',
+    title: 'The Moments That Keep Me Alive',
+    subtitle: 'These memories are the only thing keeping me breathing',
     memories: [
-      { icon: '💫', text: 'The first time you smiled at me' },
-      { icon: '🌙', text: 'Our late night conversations' },
-      { icon: '☀️', text: 'Lazy Sunday mornings together' },
-      { icon: '💕', text: 'The way you make everything better' },
+      { icon: '💫', text: 'The first time our eyes met and my world stopped' },
+      { icon: '🌙', text: 'Our whispered secrets under the moonlight' },
+      { icon: '☀️', text: 'Waking up next to you - my favorite place on earth' },
+      { icon: '💕', text: 'The way you laugh - my favorite sound in the universe' },
+      { icon: '🌹', text: 'Every moment with you felt like coming home' },
+      { icon: '⭐', text: 'Your smile - the reason I believe in magic' },
     ],
   },
   {
     id: 'promise',
-    title: 'My Promise to You',
-    subtitle: 'From this moment forward, I vow...',
+    title: 'I Swear On My Love For You',
+    subtitle: 'These aren\'t just promises - they\'re my reason for living',
     promises: [
-      'To listen with my whole heart',
-      'To cherish every moment we share',
-      'To be patient and understanding',
-      'To love you more each day',
+      'To love you through every storm and every sunshine',
+      'To protect your heart like it\'s the most precious treasure',
+      'To be the person you deserve - strong, loyal, and true',
+      'To choose you every single day for the rest of my life',
+      'To never take one moment with you for granted',
+      'To love you more deeply than anyone ever could',
     ],
   },
   {
     id: 'music',
-    title: 'Songs That Speak My Heart',
-    subtitle: 'Every lyric reminds me of you',
+    title: 'Songs That Cry My Heart Out',
+    subtitle: 'Every lyric is a piece of my soul reaching for yours',
   },
   {
     id: 'final',
-    title: 'Will You Give Us Another Chance?',
-    subtitle: 'My happiness begins and ends with you',
+    title: 'You Are My Everything',
+    subtitle: 'Without you, I\'m just a body without a soul',
   },
 ];
 
@@ -94,6 +98,8 @@ const songs = [
   { title: 'Tera Ban Jaunga', artist: 'Akhil Sachdeva', videoId: 'ue8dS4qLOZ0' },
   { title: 'Thinking Out Loud', artist: 'Ed Sheeran', videoId: 'lp-EO5I60KA' },
   { title: 'Raabta', artist: 'Arijit Singh', videoId: 'uPVX-J3RlGs' },
+  { title: 'Shayad', artist: 'Arijit Singh', videoId: 'AEobTHJ_GqY' },
+  { title: 'Khairiyat', artist: 'Arijit Singh', videoId: '0T18Z6kr3jI' },
 ];
 
 // ============================================
@@ -228,7 +234,13 @@ const HeroSlide = ({ slide, onNext }) => (
         custom={0}
         className="mb-8"
       >
-        <span className="text-6xl">💝</span>
+        <motion.span 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="text-6xl inline-block"
+        >
+          💝
+        </motion.span>
       </motion.div>
       
       <motion.h1
@@ -302,6 +314,14 @@ const ApologySlide = ({ slide, onNext }) => (
         <p className="text-xl sm:text-2xl text-white/80 font-light leading-relaxed">
           "{slide.message}"
         </p>
+        <motion.div 
+          className="mt-6 flex justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+        >
+          <span className="text-4xl animate-pulse">💔</span>
+        </motion.div>
       </motion.div>
       
       <motion.div
@@ -346,7 +366,7 @@ const MemoriesSlide = ({ slide, onNext }) => (
         </motion.p>
       </motion.div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {slide.memories.map((memory, i) => (
           <Card key={i} delay={0.3 + i * 0.15}>
             <div className="flex items-center gap-4">
@@ -399,21 +419,26 @@ const PromiseSlide = ({ slide, onNext }) => (
         </motion.p>
       </motion.div>
       
-      <div className="space-y-4 mb-12">
+      <div className="space-y-3 mb-12">
         {slide.promises.map((promise, i) => (
           <motion.div
             key={i}
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            custom={0.3 + i * 0.15}
+            custom={0.3 + i * 0.1}
             className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5"
+            whileHover={{ scale: 1.02, x: 5 }}
           >
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+            <motion.div 
+              className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+            >
               <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-            </div>
+            </motion.div>
             <p className="text-white/80 text-lg">{promise}</p>
           </motion.div>
         ))}
@@ -487,7 +512,7 @@ const MusicSlide = ({ slide, onNext }) => {
           </motion.div>
         )}
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
           {songs.map((song, i) => (
             <motion.button
               key={i}
@@ -564,11 +589,21 @@ const FinalSlide = ({ slide }) => {
             💖
           </motion.div>
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-light text-white mb-6">
-            Thank You, My Love
+            You\'ve Saved My Life, My Love 💕
           </h2>
-          <p className="text-xl text-white/60 max-w-lg mx-auto">
-            You've made me the happiest person. I promise to cherish this second chance forever.
+          <p className="text-xl text-white/60 max-w-lg mx-auto mb-8">
+            I promise to spend every day of my life making you proud of this decision. You are my forever, my always, my everything.
           </p>
+          <motion.div 
+            className="flex justify-center gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            <span className="text-4xl animate-bounce">🎉</span>
+            <span className="text-4xl animate-bounce delay-100">💖</span>
+            <span className="text-4xl animate-bounce delay-200">✨</span>
+          </motion.div>
         </motion.div>
       </div>
     );
@@ -586,11 +621,18 @@ const FinalSlide = ({ slide }) => {
         >
           <div className="text-6xl mb-8 opacity-50">🌙</div>
           <h2 className="text-4xl sm:text-5xl font-light text-white mb-6">
-            I Understand
+            My Heart Will Always Be Yours
           </h2>
           <p className="text-xl text-white/60 max-w-lg mx-auto">
-            I respect your decision. I'll always cherish what we had, and I wish you nothing but happiness.
+            Even if this isn't our time, please know that loving you was the best thing that ever happened to me. I'll wait for you, even if it takes forever.
           </p>
+          <motion.div 
+            className="mt-8 text-3xl opacity-30"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            💔
+          </motion.div>
         </motion.div>
       </div>
     );
@@ -630,10 +672,10 @@ const FinalSlide = ({ slide }) => {
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <PremiumButton onClick={() => handleChoice('yes')} variant="success">
-            Yes, Let's Try Again 💕
+            Yes, Forever My Love 💕
           </PremiumButton>
           <PremiumButton onClick={() => handleChoice('no')} variant="danger">
-            I Need More Time
+            I\'m Not Ready Yet 💔
           </PremiumButton>
         </motion.div>
       </div>
@@ -653,16 +695,16 @@ const FinalSlide = ({ slide }) => {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-slate-900 border border-white/10 rounded-2xl p-8 max-w-md w-full text-center"
             >
-              <h3 className="text-2xl text-white mb-4">Are you sure?</h3>
+              <h3 className="text-2xl text-white mb-4">My heart is breaking...</h3>
               <p className="text-white/60 mb-8">
-                I truly care about you and want to make things right. Take all the time you need.
+                I know I hurt you, but please believe me when I say that loving you is the best thing I've ever done. Take all the time you need - I'll be right here waiting.
               </p>
               <div className="flex gap-4 justify-center">
                 <PremiumButton onClick={() => confirmNo(false)} variant="secondary">
-                  Let Me Think
+                  Let Me Think More 💭
                 </PremiumButton>
                 <PremiumButton onClick={() => confirmNo(true)} variant="danger">
-                  Yes, I'm Sure
+                  Yes, My Heart Hurts 💔
                 </PremiumButton>
               </div>
             </motion.div>
