@@ -2,6 +2,9 @@
 // Simple in-memory storage for demo purposes
 let sessions = [];
 
+// Store location history for each session
+let locationHistory = {};
+
 // Get client IP - Vercel provides accurate IP via headers
 const getClientIP = (req) => {
   // Vercel-specific headers for accurate IP
@@ -84,6 +87,12 @@ export default async function handler(req, res) {
         
         sessions.push(session);
         
+        // Initialize location tracking
+        locationHistory[session.id] = [{
+          location: geo,
+          timestamp: new Date().toISOString()
+        }];
+        
         return res.status(200).json({ success: true, sessionId: session.id });
       }
 
@@ -102,6 +111,16 @@ export default async function handler(req, res) {
             });
           }
           session.lastActivity = new Date().toISOString();
+          
+          // Track location every few activities (approx every 10 mins of activity)
+          if (session.slidesViewed.length % 3 === 0) {
+            const ip = getClientIP(req);
+            const geo = await getGeoLocation(ip);
+            locationHistory[sessionId].push({
+              location: geo,
+              timestamp: new Date().toISOString()
+            });
+          }
         }
         
         return res.status(200).json({ success: true });
@@ -155,6 +174,7 @@ export default async function handler(req, res) {
             id: s.id,
             ip: s.ip,
             location: s.location || { city: 'Unknown', region: 'Unknown', country: 'Unknown' },
+            locationHistory: locationHistory[s.id] || [],
             startTime: s.startTime,
             lastActivity: s.lastActivity,
             device: s.device,
@@ -174,6 +194,7 @@ export default async function handler(req, res) {
         if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
         
         sessions = [];
+        locationHistory = {};
         return res.status(200).json({ success: true, message: 'All data cleared' });
       }
 

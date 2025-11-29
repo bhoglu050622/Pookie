@@ -119,9 +119,21 @@ const StatsPage = () => {
                   <div className="text-sm text-gray-400 space-y-1">
                     <div>📱 {session.device?.isMobile ? 'Mobile' : 'Desktop'} • {session.device?.browser}</div>
                     <div>🕐 Started: {new Date(session.startTime).toLocaleString()}</div>
+                    <div>📍 Location: {session.location?.city || 'Unknown'}, {session.location?.country || 'Unknown'}</div>
                     <div>👁️ Slides viewed: {session.slidesViewedNames.join(', ') || 'None'}</div>
                     {session.songsPlayedTitles.length > 0 && (
                       <div>🎵 Songs played: {session.songsPlayedTitles.join(', ')}</div>
+                    )}
+                    {session.locationHistory && session.locationHistory.length > 1 && (
+                      <div className="mt-2 p-2 bg-white/5 rounded text-xs">
+                        <div className="font-medium mb-1">🗺️ Location History:</div>
+                        {session.locationHistory.map((loc, idx) => (
+                          <div key={idx} className="flex justify-between">
+                            <span>{loc.location.city}, {loc.location.country}</span>
+                            <span>{new Date(loc.timestamp).toLocaleTimeString()}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
