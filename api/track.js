@@ -1,6 +1,6 @@
 // Vercel Serverless Function for tracking
-// Simple in-memory storage for demo purposes
-let sessions = [];
+// Using Vercel KV for persistent storage
+import { kv } from '@vercel/kv';
 
 // Get client IP - Vercel provides accurate IP via headers
 const getClientIP = (req) => {
@@ -82,7 +82,9 @@ export default async function handler(req, res) {
           }
         };
         
-        sessions.push(session);
+        // Store in Vercel KV
+        await kv.hset(`session:${session.id}`, session);
+        await kv.sadd('sessions', session.id);
         
         return res.status(200).json({ success: true, sessionId: session.id });
       }
@@ -91,7 +93,7 @@ export default async function handler(req, res) {
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         
         const { sessionId, slideId, slideName } = req.body;
-        const session = sessions.find(s => s.id === sessionId);
+        const session = await kv.hgetall(`session:${sessionId}`);
         
         if (session) {
           if (!session.slidesViewed.find(s => s.slideId === slideId)) {
@@ -102,6 +104,7 @@ export default async function handler(req, res) {
             });
           }
           session.lastActivity = new Date().toISOString();
+          await kv.hset(`session:${sessionId}`, session);
         }
         
         return res.status(200).json({ success: true });
@@ -111,7 +114,7 @@ export default async function handler(req, res) {
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         
         const { sessionId, songTitle, songArtist } = req.body;
-        const session = sessions.find(s => s.id === sessionId);
+        const session = await kv.hgetall(`session:${sessionId}`);
         
         if (session) {
           session.songsPlayed.push({
@@ -120,6 +123,7 @@ export default async function handler(req, res) {
             playedAt: new Date().toISOString()
           });
           session.lastActivity = new Date().toISOString();
+          await kv.hset(`session:${sessionId}`, session);
         }
         
         return res.status(200).json({ success: true });
@@ -129,7 +133,7 @@ export default async function handler(req, res) {
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         
         const { sessionId, answer } = req.body;
-        const session = sessions.find(s => s.id === sessionId);
+        const session = await kv.hgetall(`session:${sessionId}`);
         
         if (session) {
           session.finalAnswer = {
@@ -138,6 +142,7 @@ export default async function handler(req, res) {
           };
           session.completed = true;
           session.lastActivity = new Date().toISOString();
+          await kv.hset(`session:${sessionId}`, session);
         }
         
         return res.status(200).json({ success: true });
@@ -145,6 +150,13 @@ export default async function handler(req, res) {
 
       case 'stats': {
         if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        
+        // Get all session IDs
+        const sessionIds = await kv.smembers('sessions');
+        
+        // Fetch all sessions
+        const sessionsPromises = sessionIds.map(id => kv.hgetall(`session:${id}`));
+        const sessions = await Promise.all(sessionsPromises);
         
         const stats = {
           totalSessions: sessions.length,
@@ -158,10 +170,10 @@ export default async function handler(req, res) {
             startTime: s.startTime,
             lastActivity: s.lastActivity,
             device: s.device,
-            slidesViewed: s.slidesViewed.length,
-            slidesViewedNames: s.slidesViewed.map(sv => sv.slideName),
-            songsPlayed: s.songsPlayed.length,
-            songsPlayedTitles: s.songsPlayed.map(sp => sp.title),
+            slidesViewed: s.slidesViewed?.length || 0,
+            slidesViewedNames: s.slidesViewed?.map(sv => sv.slideName) || [],
+            songsPlayed: s.songsPlayed?.length || 0,
+            songsPlayedTitles: s.songsPlayed?.map(sp => sp.title) || [],
             finalAnswer: s.finalAnswer?.answer || 'not answered yet',
             completed: s.completed
           }))
@@ -173,7 +185,16 @@ export default async function handler(req, res) {
       case 'clear': {
         if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
         
-        sessions = [];
+        // Get all session IDs
+        const sessionIds = await kv.smembers('sessions');
+        
+        // Delete all sessions
+        const deletePromises = sessionIds.map(id => kv.del(`session:${id}`));
+        await Promise.all(deletePromises);
+        
+        // Clear the sessions set
+        await kv.del('sessions');
+        
         return res.status(200).json({ success: true, message: 'All data cleared' });
       }
 
