@@ -238,12 +238,17 @@
                         <div>
                             <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Session #${index + 1}</div>
                             <div style="font-weight: 500;">${session.ip}</div>
+                            ${session.location ? `
+                                <div style="font-size: 0.875rem; color: #ec4899; margin-top: 0.25rem;">
+                                    📍 ${session.location.city}, ${session.location.region}, ${session.location.country}
+                                </div>
+                            ` : ''}
                         </div>
                         <div style="text-align: right;">
                             <div class="badge ${session.completed ? 'badge-completed' : 'badge-progress'}">
                                 ${session.completed ? 'Completed' : 'In Progress'}
                             </div>
-                            ${session.finalAnswer ? `
+                            ${session.finalAnswer && session.finalAnswer !== 'not answered yet' ? `
                                 <div class="badge ${session.finalAnswer === 'yes' ? 'badge-yes' : 'badge-no'}" style="margin-top: 0.25rem;">
                                     ${session.finalAnswer === 'yes' ? '💖 Yes' : '💔 No'}
                                 </div>
@@ -252,6 +257,8 @@
                     </div>
                     <div class="session-info">
                         <div>📱 ${session.device?.isMobile ? 'Mobile' : 'Desktop'} • ${session.device?.browser || 'Unknown'}</div>
+                        ${session.location?.timezone ? `<div>🌍 Timezone: ${session.location.timezone}</div>` : ''}
+                        ${session.location?.isp ? `<div>🌐 ISP: ${session.location.isp}</div>` : ''}
                         <div>🕐 Started: ${new Date(session.startTime).toLocaleString()}</div>
                         <div>👁️ Slides viewed: ${session.slidesViewedNames.join(', ') || 'None'}</div>
                         ${session.songsPlayedTitles.length > 0 ? `

@@ -2,11 +2,41 @@
 // Simple in-memory storage for demo purposes
 let sessions = [];
 
-// Get client IP
+// Get client IP - Vercel provides accurate IP via headers
 const getClientIP = (req) => {
-  return req.headers['x-forwarded-for']?.split(',')[0] || 
-         req.headers['x-real-ip'] || 
+  // Vercel-specific headers for accurate IP
+  return req.headers['x-vercel-forwarded-for']?.split(',')[0]?.trim() ||
+         req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip']?.trim() || 
+         req.socket?.remoteAddress ||
          'unknown';
+};
+
+// Get geolocation from IP using free API
+const getGeoLocation = async (ip) => {
+  try {
+    // Skip for localhost/private IPs
+    if (ip === 'unknown' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+      return { city: 'Local', region: 'Development', country: 'Local', timezone: 'N/A' };
+    }
+    
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,timezone,isp,query`);
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      return {
+        city: data.city || 'Unknown',
+        region: data.regionName || 'Unknown',
+        country: data.country || 'Unknown',
+        timezone: data.timezone || 'Unknown',
+        isp: data.isp || 'Unknown'
+      };
+    }
+    return { city: 'Unknown', region: 'Unknown', country: 'Unknown', timezone: 'Unknown' };
+  } catch (error) {
+    console.error('Geolocation error:', error);
+    return { city: 'Unknown', region: 'Unknown', country: 'Unknown', timezone: 'Unknown' };
+  }
 };
 
 export default async function handler(req, res) {
@@ -32,9 +62,13 @@ export default async function handler(req, res) {
         const ip = getClientIP(req);
         const userAgent = req.headers['user-agent'] || 'unknown';
         
+        // Get geolocation data
+        const geo = await getGeoLocation(ip);
+        
         const session = {
           id: Date.now().toString(),
           ip,
+          location: geo,
           userAgent,
           startTime: new Date().toISOString(),
           lastActivity: new Date().toISOString(),
@@ -120,6 +154,7 @@ export default async function handler(req, res) {
           sessions: sessions.map(s => ({
             id: s.id,
             ip: s.ip,
+            location: s.location || { city: 'Unknown', region: 'Unknown', country: 'Unknown' },
             startTime: s.startTime,
             lastActivity: s.lastActivity,
             device: s.device,
