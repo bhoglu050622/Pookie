@@ -1,5 +1,6 @@
 // Google Sheets API integration for persistent stats storage
 import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
 
 // Configuration - you'll need to set these environment variables in Vercel
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
@@ -16,12 +17,15 @@ const initSheets = async () => {
   }
 
   try {
-    const creds = {
-      client_email: SERVICE_ACCOUNT_EMAIL,
-      private_key: PRIVATE_KEY,
-    };
+    const serviceAccountAuth = new JWT({
+      email: SERVICE_ACCOUNT_EMAIL,
+      key: PRIVATE_KEY,
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+      ],
+    });
     
-    doc = new GoogleSpreadsheet(SPREADSHEET_ID, creds);
+    doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
     await doc.loadInfo();
     console.log('Connected to Google Sheets:', doc.title);
     return doc;
