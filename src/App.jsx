@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getOrCreateSession, trackSlideView, trackSongPlayed, trackFinalAnswer } from './services/tracking';
 
@@ -679,6 +679,21 @@ const FinalSlide = ({ slide }) => {
 function App() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sessionReady, setSessionReady] = useState(false);
+  
+  // Check if we're on the stats page
+  const isStatsPage = window.location.pathname === '/stats';
+  if (isStatsPage) {
+    const StatsDashboard = lazy(() => import('./components/StatsDashboard'));
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+        </div>
+      }>
+        <StatsDashboard />
+      </Suspense>
+    );
+  }
   
   // Initialize tracking session on mount
   useEffect(() => {
