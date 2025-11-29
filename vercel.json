@@ -19,6 +19,10 @@
       "destination": "/api/track.js"
     },
     {
+      "source": "/stats",
+      "destination": "/stats.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pookie Stats - Tracking Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #020617;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-number {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-label {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .sessions {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .sessions h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+        
+        .session {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .session-info {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+        }
+        
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .badge-progress {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .badge-yes {
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+        }
+        
+        .badge-no {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50vh;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 2px solid rgba(236, 72, 153, 0.3);
+            border-top-color: #ec4899;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #ef4444;
+        }
+        
+        .refresh-btn {
+            background: rgba(236, 72, 153, 0.2);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            color: #ec4899;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(236, 72, 153, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Pookie Tracking Stats</h1>
+        
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading stats...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let statsData = null;
+        let refreshInterval = null;
+
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/track?action=stats');
+                const data = await response.json();
+                statsData = data;
+                renderStats(data);
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                renderError('Could not fetch stats. Please try again.');
+            }
+        }
+
+        function renderStats(stats) {
+            const content = document.getElementById('content');
+            
+            const cards = `
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon">👁️</div>
+                        <div class="card-number">${stats.totalSessions}</div>
+                        <div class="card-label">Total Views</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">✅</div>
+                        <div class="card-number">${stats.completedSessions}</div>
+                        <div class="card-label">Completed</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">💖</div>
+                        <div class="card-number">${stats.yesAnswers}</div>
+                        <div class="card-label">Yes Answers</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">💔</div>
+                        <div class="card-number">${stats.noAnswers}</div>
+                        <div class="card-label">No Answers</div>
+                    </div>
+                </div>
+            `;
+
+            const sessions = stats.sessions.map((session, index) => `
+                <div class="session">
+                    <div class="session-header">
+                        <div>
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Session #${index + 1}</div>
+                            <div style="font-weight: 500;">${session.ip}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="badge ${session.completed ? 'badge-completed' : 'badge-progress'}">
+                                ${session.completed ? 'Completed' : 'In Progress'}
+                            </div>
+                            ${session.finalAnswer ? `
+                                <div class="badge ${session.finalAnswer === 'yes' ? 'badge-yes' : 'badge-no'}" style="margin-top: 0.25rem;">
+                                    ${session.finalAnswer === 'yes' ? '💖 Yes' : '💔 No'}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="session-info">
+                        <div>📱 ${session.device?.isMobile ? 'Mobile' : 'Desktop'} • ${session.device?.browser || 'Unknown'}</div>
+                        <div>🕐 Started: ${new Date(session.startTime).toLocaleString()}</div>
+                        <div>👁️ Slides viewed: ${session.slidesViewedNames.join(', ') || 'None'}</div>
+                        ${session.songsPlayedTitles.length > 0 ? `
+                            <div>🎵 Songs played: ${session.songsPlayedTitles.join(', ')}</div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            content.innerHTML = `
+                ${cards}
+                <div class="sessions">
+                    <h2>📝 Session Details</h2>
+                    ${stats.sessions.length === 0 ? '<p style="color: rgba(255,255,255,0.6);">No sessions yet...</p>' : sessions}
+                </div>
+                <div style="text-align: center;">
+                    <button class="refresh-btn" onclick="fetchStats()">🔄 Refresh Stats</button>
+                </div>
+            `;
+        }
+
+        function renderError(message) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="error">
+                    <p>${message}</p>
+                    <button class="refresh-btn" onclick="fetchStats()">🔄 Try Again</button>
+                </div>
+            `;
+        }
+
+        // Initial load
+        fetchStats();
+        
+        // Auto-refresh every 30 seconds
+        refreshInterval = setInterval(fetchStats, 30000);
+    </script>
+</body>
+</html>
