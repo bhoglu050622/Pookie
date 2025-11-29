@@ -9,23 +9,18 @@
       }
     },
     {
-      "src": "server/index.js",
+      "src": "api/track.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server/index.js"
+      "src": "/api/track",
+      "dest": "/api/track.js"
     },
     {
       "src": "/(.*)",
       "dest": "/dist/$1"
     }
-  ],
-  "functions": {
-    "server/index.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }
