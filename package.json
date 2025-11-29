@@ -8,7 +8,7 @@
     "server": "node server/index.js",
     "start": "npm run server & npm run dev",
     "build": "vite build",
-    "vercel-build": "vite build",
+    "vercel-build": "vite build && cp stats.html dist/",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
