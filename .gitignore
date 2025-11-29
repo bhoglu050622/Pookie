@@ -32,3 +32,4 @@ server/tracking-data.json
 .cache/
 .vercel/
 .netlify/
+.vercel
