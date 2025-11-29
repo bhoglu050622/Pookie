@@ -6,13 +6,18 @@ const StatsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  console.log('StatsDashboard component rendered');
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        console.log('Fetching stats...');
         const data = await getStats();
+        console.log('Stats received:', data);
         setStats(data);
         setLoading(false);
       } catch (err) {
+        console.error('Stats fetch error:', err);
         setError('Could not fetch stats');
         setLoading(false);
       }

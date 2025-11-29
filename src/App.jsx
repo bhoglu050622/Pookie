@@ -679,10 +679,16 @@ const FinalSlide = ({ slide }) => {
 function App() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sessionReady, setSessionReady] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   
   // Check if we're on the stats page
-  const isStatsPage = window.location.pathname === '/stats';
-  if (isStatsPage) {
+  useEffect(() => {
+    if (window.location.pathname === '/stats' || window.location.hash === '#/stats') {
+      setShowStats(true);
+    }
+  }, []);
+  
+  if (showStats) {
     const StatsDashboard = lazy(() => import('./components/StatsDashboard'));
     return (
       <Suspense fallback={
