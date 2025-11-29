@@ -16,11 +16,12 @@ const initSheets = async () => {
   }
 
   try {
-    doc = new GoogleSpreadsheet(SPREADSHEET_ID);
-    await doc.useServiceAccountAuth({
+    const creds = {
       client_email: SERVICE_ACCOUNT_EMAIL,
       private_key: PRIVATE_KEY,
-    });
+    };
+    
+    doc = new GoogleSpreadsheet(SPREADSHEET_ID, creds);
     await doc.loadInfo();
     console.log('Connected to Google Sheets:', doc.title);
     return doc;
