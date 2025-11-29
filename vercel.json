@@ -13,20 +13,10 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    {
-      "src": "/api/track",
-      "dest": "/api/track.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/$1"
-    }
-  ],
   "rewrites": [
     {
-      "source": "/stats",
-      "destination": "/index.html"
+      "source": "/api/track",
+      "destination": "/api/track.js"
     },
     {
       "source": "/(.*)",
