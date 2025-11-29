@@ -194,10 +194,12 @@
 
         async function fetchStats() {
             try {
-                const response = await fetch('/api/track?action=stats');
+                // Add cache-busting timestamp
+                const response = await fetch('/api/track?action=stats&t=' + Date.now());
                 const data = await response.json();
                 statsData = data;
                 renderStats(data);
+                console.log('Stats updated:', new Date().toLocaleTimeString(), data);
             } catch (error) {
                 console.error('Error fetching stats:', error);
                 renderError('Could not fetch stats. Please try again.');
@@ -275,6 +277,9 @@
                     ${stats.sessions.length === 0 ? '<p style="color: rgba(255,255,255,0.6);">No sessions yet...</p>' : sessions}
                 </div>
                 <div style="text-align: center;">
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.75rem; margin-bottom: 0.5rem;">
+                        Last updated: ${new Date().toLocaleTimeString()} (auto-refreshes every 10s)
+                    </p>
                     <button class="refresh-btn" onclick="fetchStats()">🔄 Refresh Stats</button>
                 </div>
             `;
@@ -293,8 +298,8 @@
         // Initial load
         fetchStats();
         
-        // Auto-refresh every 30 seconds
-        refreshInterval = setInterval(fetchStats, 30000);
+        // Auto-refresh every 10 seconds
+        refreshInterval = setInterval(fetchStats, 10000);
     </script>
 </body>
 </html>
