@@ -17,11 +17,22 @@ const buildUrl = (action) => {
 export const initSession = async () => {
   try {
     const url = isDev ? `${API_BASE}/session/start` : `${API_BASE}?action=start`;
+    console.log('🔍 Tracking: Starting session at', url);
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
+    
+    console.log('🔍 Tracking: Response status', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
     const data = await response.json();
+    console.log('🔍 Tracking: Session created', data);
+    
     sessionId = data.sessionId;
     
     // Store in localStorage for persistence
@@ -29,7 +40,7 @@ export const initSession = async () => {
     
     return sessionId;
   } catch (error) {
-    console.log('Tracking unavailable');
+    console.error('🔍 Tracking: Session creation failed', error);
     return null;
   }
 };
@@ -38,27 +49,42 @@ export const initSession = async () => {
 export const getOrCreateSession = async () => {
   // Check for existing session
   const existingSession = localStorage.getItem('pookie_session_id');
+  console.log('🔍 Tracking: Existing session from localStorage:', existingSession);
+  
   if (existingSession) {
     sessionId = existingSession;
+    console.log('🔍 Tracking: Using existing session:', sessionId);
     return sessionId;
   }
   
+  console.log('🔍 Tracking: No existing session, creating new one');
   return await initSession();
 };
 
 // Track slide view
 export const trackSlideView = async (slideId, slideName) => {
-  if (!sessionId) return;
+  if (!sessionId) {
+    console.log('🔍 Tracking: No session ID for slide tracking');
+    return;
+  }
   
   try {
     const url = isDev ? `${API_BASE}/track/slide` : `${API_BASE}?action=slide`;
-    await fetch(url, {
+    console.log('🔍 Tracking: Tracking slide', slideId, slideName, 'at', url);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, slideId, slideName })
     });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    console.log('🔍 Tracking: Slide tracked successfully');
   } catch (error) {
-    // Silently fail - don't interrupt user experience
+    console.error('🔍 Tracking: Slide tracking failed', error);
   }
 };
 
