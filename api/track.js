@@ -5,6 +5,9 @@ let sessions = [];
 // Store location history for each session
 let locationHistory = {};
 
+// Import Google Sheets integration
+import { saveSessionToSheets, saveLocationUpdate } from './google-sheets.js';
+
 // Get client IP - Vercel provides accurate IP via headers
 const getClientIP = (req) => {
   // Vercel-specific headers for accurate IP
@@ -93,6 +96,11 @@ export default async function handler(req, res) {
           timestamp: new Date().toISOString()
         }];
         
+        // Save to Google Sheets (async, don't wait)
+        saveSessionToSheets(session).catch(err => 
+          console.log('Google Sheets save failed (continuing anyway):', err.message)
+        );
+        
         return res.status(200).json({ success: true, sessionId: session.id });
       }
 
@@ -116,10 +124,17 @@ export default async function handler(req, res) {
           if (session.slidesViewed.length % 3 === 0) {
             const ip = getClientIP(req);
             const geo = await getGeoLocation(ip);
+            const timestamp = new Date().toISOString();
+            
             locationHistory[sessionId].push({
               location: geo,
-              timestamp: new Date().toISOString()
+              timestamp: timestamp
             });
+            
+            // Save location update to Google Sheets (async, don't wait)
+            saveLocationUpdate(sessionId, geo, timestamp).catch(err => 
+              console.log('Google Sheets location save failed (continuing anyway):', err.message)
+            );
           }
         }
         
@@ -157,6 +172,11 @@ export default async function handler(req, res) {
           };
           session.completed = true;
           session.lastActivity = new Date().toISOString();
+          
+          // Save updated session to Google Sheets (async, don't wait)
+          saveSessionToSheets(session).catch(err => 
+            console.log('Google Sheets final save failed (continuing anyway):', err.message)
+          );
         }
         
         return res.status(200).json({ success: true });
