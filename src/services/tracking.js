@@ -41,6 +41,12 @@ export const initSession = async () => {
     return sessionId;
   } catch (error) {
     console.error('🔍 Tracking: Session creation failed', error);
+    // Don't return null for production - create a fallback session
+    if (!isDev) {
+      sessionId = 'fallback_' + Date.now().toString();
+      localStorage.setItem('pookie_session_id', sessionId);
+      return sessionId;
+    }
     return null;
   }
 };
@@ -85,6 +91,7 @@ export const trackSlideView = async (slideId, slideName) => {
     console.log('🔍 Tracking: Slide tracked successfully');
   } catch (error) {
     console.error('🔍 Tracking: Slide tracking failed', error);
+    // Silently fail in production to not break user experience
   }
 };
 
@@ -124,10 +131,29 @@ export const trackFinalAnswer = async (answer) => {
 export const getStats = async () => {
   try {
     const url = isDev ? `${API_BASE}/stats` : `${API_BASE}?action=stats`;
+    console.log('🔍 Tracking: Fetching stats from', url);
     const response = await fetch(url);
-    return await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('🔍 Tracking: Stats received', data);
+    return data;
   } catch (error) {
-    console.log('Could not fetch stats');
+    console.error('🔍 Tracking: Could not fetch stats', error);
+    // Return fallback data for production
+    if (!isDev) {
+      return {
+        totalSessions: 0,
+        completedSessions: 0,
+        yesAnswers: 0,
+        noAnswers: 0,
+        sessions: [],
+        error: 'Stats temporarily unavailable'
+      };
+    }
     return null;
   }
 };
